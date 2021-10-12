@@ -180,6 +180,8 @@ void pushNode(Node** headRef, Node** tailRef, Xyston_class_StarDestroyer d){
     return;
 }
 
+//Changes for ast05
+//compare function courtesy of Professor :)
 //return 0 for equal, -1 for a being less and 1 for b being less.
 int compareShipNames(string a, string b){
 	if( a == b) return 0;
@@ -219,13 +221,11 @@ int compareShipNames(string a, string b){
 //Bubble sort
 void bubbleSort(Xyston_class_StarDestroyer* arr[],int fleet_size){
     string a, b;    //Place holder strings for the names
-    int temp = 0;   //temp for swaping
     for(int i = 0; i < (fleet_size - 1); i++){         //Go through the list
         for(int j = 0; j < (fleet_size - 1); j++){
             a = arr[j]->getName();      //get strings and place into a and b
             b = arr[j+1]->getName();
-            temp = compareShipNames(a,b);        //compare to see which is greater
-                if(temp > 0){
+                if(compareShipNames(a,b) > 0){
                     Xyston_class_StarDestroyer *temp = arr[j];  //put arr[j] into temp
                     arr[j] = arr[j+1];  //Swap the higher index to lower
                     arr[j+1] = temp;    //put temp back into arr[j+1] which was arr[j]
@@ -235,32 +235,27 @@ void bubbleSort(Xyston_class_StarDestroyer* arr[],int fleet_size){
 }
 
 void insertNodeSort(Node** headRef, Node* insertNode){
-    Node* curr;
+    Node* curr = *headRef;
 
     //Case 1: List is empty
     if(*headRef == NULL){
         *headRef = insertNode;
     }
     //Case 2: Insert at the start
-    
     else if(compareShipNames((*headRef)->data.getName(), (insertNode->data.getName())) >= 0){
+        //move head to 2nd spot and place insertNode at the beginning
         insertNode->next = *headRef;
         insertNode->next->prev = insertNode;
         *headRef = insertNode;
     }
     //Case 3: Insert somewhere after start
-    else{
-        curr = *headRef;        
+    else{       
         while(curr->next != NULL && compareShipNames(curr->next->data.getName(),insertNode->data.getName()) < 0)
             curr = curr->next;  //Keep traversing till gets to a node that
-        
-        //Swap the nodes
+
+        //Start preping for swap
         insertNode->next = curr->next; 
-
-        //If its at the end of the linked list
-        if(curr->next != NULL)
-            insertNode->next->prev = insertNode;
-
+        //Swap
         curr->next = insertNode;
         insertNode->prev = curr;
     }
@@ -271,6 +266,7 @@ void insertionSort(Node** headRef, Node** tailRef, int fleet_size){
     Node* sortedList = NULL;    //Sorted list that will be sent back
     Node* curr = *tailRef;      //Get the list starting at the back
     while(curr != NULL){
+        //Dequeue from the list into the sorted list
         Node* tempPrev = curr->prev;    //Save the node behind before its changed
         insertNodeSort(&sortedList, curr);
         curr = tempPrev;        //traverse the list backwards
@@ -300,11 +296,8 @@ void selectionSort(vector<Xyston_class_StarDestroyer> &arr, int fleet_size){
 //function to split the list into two
 void mergeSplit(Node* head, Node** left, Node** right){
     //used to advance the list till the middle
-    Node* fast;     //will grow 2x as fast as slow so when it hits end slow should be mid
-    Node* slow;
-
-    slow = head;
-    fast = head->next;
+    Node* slow = head;     
+    Node* fast = head->next;    //will grow 2x faster than slow so when it hits end slow should be mid
 
     //figure out the middle of the list
     while(fast != NULL){    //check if at end of list
@@ -316,8 +309,8 @@ void mergeSplit(Node* head, Node** left, Node** right){
     }//finished traversing the list
 
     *left = head;   //start at the start
-    *right = slow->next;
-    slow->next = NULL;
+    *right = slow->next;    //start at the middle + 1
+    slow->next = NULL;  //clear out the rest of slow
 }
 
 //Sorts between the two list and merges them back into one

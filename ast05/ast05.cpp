@@ -156,7 +156,7 @@ class Node{
         Node* prev;
 };
 
-void pushNode(Node** headRef, Xyston_class_StarDestroyer d){
+void pushNode(Node** headRef, Node** tailRef, Xyston_class_StarDestroyer d){
     Node* newNode = new Node();         //New node inputed by function
     Node *temp = *headRef;              //for traversing the node
 
@@ -167,6 +167,7 @@ void pushNode(Node** headRef, Xyston_class_StarDestroyer d){
     {
         newNode->prev = NULL;           //It is head node before is NULL
         *headRef = newNode;             //Makes newNode the head node
+        *tailRef = newNode;
         return;
     }
 
@@ -175,7 +176,8 @@ void pushNode(Node** headRef, Xyston_class_StarDestroyer d){
     }
     
     temp->next = newNode;               //Makes the temp node, that became the last node, to point to the new last node that was created
-    newNode->prev = temp;                //temp becomes the new prev node
+    *tailRef = newNode;
+    newNode->prev = temp;               //temp becomes the new prev node
     return;
 }
 
@@ -198,44 +200,58 @@ void bubbleSort(Xyston_class_StarDestroyer* arr[],int fleet_size){
     }
 }
 
-//Insertion Sort
-// void insertionSort(Node** headRef,int fleet_size){
-//     Node* sortedList = NULL;
-//     Node* curr = *headRef;
-//     int temp = 0;   //used to hold value of which str is greater
+void insertNodeSort(Node** headRef, Node* insertNode){
+    Node* curr;
 
-//     while (curr->next != NULL){
-//         Node* nextNode = curr->next;    //temp to hold next node
-//         // string currStr = curr->data.getName();
-//         // string nextStr = curr->next->data.getName();
+    //Case 1: List is empty
+    if(*headRef == NULL){
+        *headRef = insertNode;
+    }
+    //Case 2: Insert at the start
+    else if((*headRef)->data.getName().compare(insertNode->data.getName()) >= 0){
+        insertNode->next = *headRef;
+        insertNode->next->prev = insertNode;
+        *headRef = insertNode;
+    }
+    //Case 3: Insert somewhere after start
+    else{
+        curr = *headRef;
+        while(curr->next != NULL && curr->next->data.getName().compare(insertNode->data.getName()) < 0)
+            curr = curr->next;  //Keep traversing till gets to a node that
+        
+        //Swap the nodes
+        insertNode->next = curr->next; 
 
-//         // temp = currStr.compare(nextStr);
-//         if(sortedList->data != NULL)
-//             string a = sortedList->data.getName();  //temp strings to hold values of nodes
-//         string b = curr->data.getName();
-//         if(sortedList == NULL ||(a.compare(b)) >= 0){
-//             curr->next = sortedList;
-//             sortedList = curr;
-//         }
-//         else{
-//             Node* temp = sortedList;
-//             string c = temp->next->data.getName();
-            
-//             while(temp->next != NULL && c.compare(b) < 0){
-//                 temp = temp->next;
-//             }
-//             curr->next = temp->next;
-//             temp->next = curr;
-//         }
-//         curr = nextNode;
-//     }  
-//     headRef = &sortedList;
-// }
+        //If its at the end of the linked list
+        if(curr->next != NULL)
+            insertNode->next->prev = insertNode;
 
-//Insertion Sort
-void insertionSort(Node** headRef,int fleet_size){
-    
+        curr->next = insertNode;
+        insertNode->prev = curr;
+    }
 }
+
+//Insertion Sort
+void insertionSort(Node** headRef, Node** tailRef, int fleet_size){
+    Node* sortedList = NULL;    //Sorted list that will be sent back
+    Node* curr = *tailRef;      //Get the list starting at the back
+    while(curr != NULL){
+        Node* tempPrev = curr->prev;    //Save the node behind before its changed
+        insertNodeSort(&sortedList, curr);
+        curr = tempPrev;        //traverse the list backwards
+    }
+    *headRef = sortedList;      //set the sorted list to the head
+}
+
+//TESTING TAIL POINTER
+// void testLLTail(Node** tailRef, int fleet_size){
+//     Node* curr = *tailRef;
+//     int i = 0;
+//     while(curr != NULL){
+//         cout << "TESTING " << i++ << ".) " << curr->data.getName() << endl;
+//         curr = curr->prev;
+//     }
+// }
 
 //TESTING LINKED LIST IN REVERSE
 // void testLLReverse(Node** headRef, int fleet_size){
@@ -402,6 +418,7 @@ int main(int argc, char **argv){
     Xyston_class_StarDestroyer *Sith_Eternal_Fleet[fleet_size]; //Dyanmic array
     vector<Xyston_class_StarDestroyer> Sith_Eternal_Fleet_Vec;     //Vector
     Node* head = NULL;          //Linked List
+    Node* tail = NULL;
     
     //Fill the data type depending on which type it is
     for(int i=0; i < fleet_size; i++){
@@ -412,7 +429,7 @@ int main(int argc, char **argv){
             Sith_Eternal_Fleet_Vec.push_back(Xyston_class_StarDestroyer(nameList));
         }
         else if(dataType == 3){
-            pushNode(&head, Xyston_class_StarDestroyer(nameList));
+            pushNode(&head, &tail, Xyston_class_StarDestroyer(nameList));
         }
     }
     
@@ -527,7 +544,7 @@ int main(int argc, char **argv){
         }
         else if(sortingType == 2){  //Insertion Sort
             if(dataType == 3){      //Only run if Linked list
-                insertionSort(&head,fleet_size);
+                insertionSort(&head, &tail, fleet_size);
             }
             else{
                 file << dataType <<endl << "ERROR: WRONG DATA FORMAT TO SORT WITH!!!" << endl;
@@ -576,8 +593,10 @@ int main(int argc, char **argv){
                     file << Sith_Eternal_Fleet_Vec.at(i).getName() << endl;
                 }
                 else if(dataType == 3){
-                    file << curr->data.getName() << endl;
-                    curr = curr->next;      //traverse the linked list
+                    while(curr != NULL){
+                        file << curr->data.getName() << endl;
+                        curr = curr->next;      //traverse the linked list
+                    }
                 }
             }
         }

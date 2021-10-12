@@ -1,30 +1,10 @@
-Peremptory #1
-Bellicose #3
-Pulsar #5
-Triumph #7
-Red Gauntlet #9
-Agonizer #11
-Monarch #13
-Vengeance #15
-Judicator #17
-Vengeance #19
-
-
-
-
-
-
-
-
-
-
-Peremptory #1
-Peremptory #1
-Pulsar #5
-Triumph #7
-Triumph #7
-Triumph #7
-Triumph #7
-Vengeance #15
-Vengeance #15
-Vengeance #19
+Inexorable #1
+Direption #3
+Vengeance #5
+Rage #7
+Resolution #9
+Resolution #11
+Retribution #13
+Valorous #15
+Admonitor #17
+Courageous #19

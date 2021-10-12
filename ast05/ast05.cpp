@@ -133,7 +133,6 @@ public:
     string whatamI(){
         return "Xyston_class_StarDestroyer";
     }
-  
 };
 
 
@@ -181,7 +180,42 @@ void pushNode(Node** headRef, Node** tailRef, Xyston_class_StarDestroyer d){
     return;
 }
 
-//changes for ast05
+//return 0 for equal, -1 for a being less and 1 for b being less.
+int compareShipNames(string a, string b){
+	if( a == b) return 0;
+	int min = a.length() <= b.length() ? a.length() : b.length(); //min function
+	int i;
+	for(i=0; i < min; i++){
+		if(isdigit(a[i]) || isdigit(b[i])) break;
+		if(tolower(a[i]) < tolower(b[i])) return -1;
+		if(tolower(a[i]) > tolower(b[i])) return 1;
+		if(tolower(a[i]) == tolower(b[i])) continue;
+		cout << "wat" << endl;
+	}
+	if(isdigit(a[i]) && !isdigit(b[i])) return -1;
+	if(!isdigit(a[i]) && isdigit(b[i])) return 1;
+	if(!isdigit(a[i]) && !isdigit(b[i])) cout << "We dun gufd"<< endl;
+	
+	//Copy numbers to their own strings:
+	string anum = "";
+	string bnum = "";
+	for(int j=i; j < a.length(); j++){
+		anum += a[j];
+	}
+	for(int j=i; j < b.length(); j++){
+		bnum += b[j];		
+	}
+	//convert em to ints
+	int numa = stoi(anum); 
+	int numb = stoi(bnum);
+
+	if(numa < numb) return -1;
+	if(numa > numb) return 1;
+	if(numa == numb) return 0;
+	
+	return 42; // we dun guffd
+}
+
 //Bubble sort
 void bubbleSort(Xyston_class_StarDestroyer* arr[],int fleet_size){
     string a, b;    //Place holder strings for the names
@@ -190,7 +224,7 @@ void bubbleSort(Xyston_class_StarDestroyer* arr[],int fleet_size){
         for(int j = 0; j < (fleet_size - 1); j++){
             a = arr[j]->getName();      //get strings and place into a and b
             b = arr[j+1]->getName();
-            temp = a.compare(b);        //compare to see which is greater
+            temp = compareShipNames(a,b);        //compare to see which is greater
                 if(temp > 0){
                     Xyston_class_StarDestroyer *temp = arr[j];  //put arr[j] into temp
                     arr[j] = arr[j+1];  //Swap the higher index to lower
@@ -208,15 +242,16 @@ void insertNodeSort(Node** headRef, Node* insertNode){
         *headRef = insertNode;
     }
     //Case 2: Insert at the start
-    else if((*headRef)->data.getName().compare(insertNode->data.getName()) >= 0){
+    
+    else if(compareShipNames((*headRef)->data.getName(), (insertNode->data.getName())) >= 0){
         insertNode->next = *headRef;
         insertNode->next->prev = insertNode;
         *headRef = insertNode;
     }
     //Case 3: Insert somewhere after start
     else{
-        curr = *headRef;
-        while(curr->next != NULL && curr->next->data.getName().compare(insertNode->data.getName()) < 0)
+        curr = *headRef;        
+        while(curr->next != NULL && compareShipNames(curr->next->data.getName(),insertNode->data.getName()) < 0)
             curr = curr->next;  //Keep traversing till gets to a node that
         
         //Swap the nodes
@@ -250,7 +285,8 @@ void selectionSort(vector<Xyston_class_StarDestroyer> &arr, int fleet_size){
         minIndex = i; //assume first index is the smallest
         for(int j = i+1; j < fleet_size; j++){
             //compare to see if first value is lower than min
-            if((arr.at(j).getName()).compare(arr.at(minIndex).getName()) < 0)
+            
+            if(compareShipNames(arr.at(j).getName(), arr.at(minIndex).getName()) < 0)
                 minIndex = j; //min index is the smallest
         }
         if(minIndex != i){  //there is a different minValue not at I
@@ -297,8 +333,7 @@ Node* merge(Node* left, Node* right){
         //sort the list by comparing the values and call merge again till done
         string leftStr = left->data.getName();
         string rightStr = right->data.getName();
-
-        if(leftStr.compare(rightStr) <= 0){  //if left is less than or equal to right
+        if(compareShipNames(leftStr, rightStr) <= 0){  //if left is less than or equal to right
             temp = left;
             temp->next = merge(left->next, right);  //recur till list is done
         }
@@ -338,7 +373,7 @@ int partition(Xyston_class_StarDestroyer* arr[], int l, int r){
 
     for(int j = l; j < r; j++){
         tempStr = arr[j]->getName();
-        if(tempStr.compare(pivotStr) < 0){  //if high pointer is less than pivot
+        if(compareShipNames(tempStr, pivotStr) < 0){  //if high pointer is less than pivot
             i++;
             //Swap the two
             Xyston_class_StarDestroyer* temp = arr[i];
@@ -417,7 +452,7 @@ int main(int argc, char **argv){
     srand (time(NULL)); //Seed Rand!
     RNGnamer nameList(argv[1]);
     int fleet_size = 10000;
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
     fleet_size = 10; //for small tests (sample output given is with this size)
 #endif
@@ -520,11 +555,6 @@ int main(int argc, char **argv){
     //changes for ast05
     //Output to file
     if(argc >= 4){      //Running sorting
-        cout << "TEST: " << inputSortingType << endl; //TEST
-        cout << "TEST: " << sortingType << endl; //TEST
-        cout << "TEST: " << dataType << endl; //TEST
-        //cout << "inputSortingType.length(): " << inputSortingType.length() << endl;
-
         //Writing unsorted ships into file
         ofstream file;
         file.open("sithfleet.txt");
@@ -613,7 +643,6 @@ int main(int argc, char **argv){
 
         file.close();
     }
-    // testLLReverse(&head,fleet_size); //FOR TESTING
     //end of changes
     if(dataType == 1){
         for(int i=0; i < fleet_size; i++){

@@ -243,30 +243,6 @@ void insertionSort(Node** headRef, Node** tailRef, int fleet_size){
     *headRef = sortedList;      //set the sorted list to the head
 }
 
-//TESTING TAIL POINTER
-// void testLLTail(Node** tailRef, int fleet_size){
-//     Node* curr = *tailRef;
-//     int i = 0;
-//     while(curr != NULL){
-//         cout << "TESTING " << i++ << ".) " << curr->data.getName() << endl;
-//         curr = curr->prev;
-//     }
-// }
-
-//TESTING LINKED LIST IN REVERSE
-// void testLLReverse(Node** headRef, int fleet_size){
-//     Node* temp = *headRef;
-//     while(temp->next != NULL){
-//         temp = temp->next;
-//     }
-//     int i = 0;
-//     while(temp != NULL){
-//         cout << "TESTING "<< i++ << ".) " << temp->data.getName() << endl;
-//         temp = temp->prev;
-//     }
-// }
-
-
 //Selection sort
 void selectionSort(vector<Xyston_class_StarDestroyer> &arr, int fleet_size){
     int minIndex = 0;   //used to hold the index of smallest value in unsorted part of list
@@ -350,9 +326,39 @@ void mergeSort(Node** headRef){
     *headRef = merge(left, right);
 
 }
-
 //Quick sort
+int partition(Xyston_class_StarDestroyer* arr[], int l, int r){
+    string pivotStr = arr[r]->getName();    //Get pivot string and store it
+    string tempStr = "";                    //used later for compare
+    int i = l - 1;
 
+    for(int j = l; j < r; j++){
+        tempStr = arr[j]->getName();
+        if(tempStr.compare(pivotStr) < 0){  //if high pointer is less than pivot
+            i++;
+            //Swap the two
+            Xyston_class_StarDestroyer* temp = arr[i];
+            arr[i] = arr[j];
+            arr[j] = temp;
+        }
+    }
+    //Place pivot in correct spot among the array
+    Xyston_class_StarDestroyer* temp = arr[i+1];
+    arr[i+1] = arr[r];
+    arr[r] = temp;
+    return (i+1);   //return the pivot place
+}
+
+void quickSort(Xyston_class_StarDestroyer* arr[], int l, int r){
+    //Base Case
+    if(l >= r)  //Quick sort is done as there is nothing left to sort
+        return;
+    else{
+        int pivot = partition(arr, l, r);   //place pivot in right place
+        quickSort(arr, l, (pivot-1));       //Recurrsive calls for l than pivot
+        quickSort(arr, (pivot+1), r);       //and for right of pivot
+    }
+}
 
 //end of changes for ast05
 
@@ -571,7 +577,7 @@ int main(int argc, char **argv){
         }
         else if(sortingType == 5){   //Quick Sort
             if(dataType == 1){       //Only runs if dytanmic array
-
+                quickSort(Sith_Eternal_Fleet, 0, (fleet_size-1));
             }
             else{
                 file << dataType <<endl << "ERROR: WRONG DATA FORMAT TO SORT WITH!!!" << endl;

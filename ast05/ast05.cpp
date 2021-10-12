@@ -281,6 +281,7 @@ void mergeSplit(Node* head, Node** left, Node** right){
 
     *left = head;   //start at the start
     *right = slow->next;
+    slow->next = NULL;
 }
 
 //Sorts between the two list and merges them back into one
@@ -292,20 +293,21 @@ Node* merge(Node* left, Node* right){
         return(right);
     else if(right == NULL)
         return(left);
-
-    //sort the list by comparing the values and call merge again till done
-    string leftStr = left->data.getName();
-    string rightStr = right->data.getName();
-
-    if(leftStr.compare(rightStr) <= 0){  //if left is less than or equal to right
-        temp = left;
-        temp->next = merge(left->next, right);
-    }
     else{
-        temp = right;
-        temp->next = merge(left,right->next);
+        //sort the list by comparing the values and call merge again till done
+        string leftStr = left->data.getName();
+        string rightStr = right->data.getName();
+
+        if(leftStr.compare(rightStr) <= 0){  //if left is less than or equal to right
+            temp = left;
+            temp->next = merge(left->next, right);  //recur till list is done
+        }
+        else{
+            temp = right;
+            temp->next = merge(left,right->next);
+        }
+        return temp;    //temp will have the sorted list of the two left and right
     }
-    return temp;
 }
 
 void mergeSort(Node** headRef){
@@ -313,18 +315,20 @@ void mergeSort(Node** headRef){
     Node* left;
     Node* right;
 
-    if(head == NULL|| head->next == NULL){  //base case
+    //base case linked list is empty or one link
+    if(head == NULL|| head->next == NULL){  
         return;     //end recursion
     }
-    mergeSplit(head, &left, &right);    //Split the list into two parts left and right
+    else{
+        mergeSplit(head, &left, &right);    //Split the list into two parts left and right
 
-    //recursion that will divide the list more and more
-    mergeSort(&left);
-    mergeSort(&right);
+        //recursion that will divide the list more and more
+        mergeSort(&left);
+        mergeSort(&right);
 
-    //remerge the two list
-    *headRef = merge(left, right);
-
+        //remerge the two list
+        *headRef = merge(left, right);
+    } 
 }
 //Quick sort
 int partition(Xyston_class_StarDestroyer* arr[], int l, int r){

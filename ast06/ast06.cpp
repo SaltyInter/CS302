@@ -1,3 +1,12 @@
+//Build as: g++ ast06.cpp -g -std=c++17
+//Execute as: ./a.out
+
+/*
+ * Name: Matthew Shiroma, NSHE ID: 2001814396, assignment #6
+ * Description: 
+ * Inputs: 
+ * Outputs:
+ */
 #include<iostream>
 #include<string>
 #include<ctime>
@@ -10,11 +19,20 @@ template < class T>
 class node {
   public:
     //Your Code Here: Default Constructor
+    node(){left = NULL; right = NULL; data = NULL;}; 
     node(const T &var) : left(NULL), right(NULL) {
         //Your Code Here
+        *data = var;
     }
     //Your Code Here for Destructor
+    ~node(){
+        delete data;
+    }
     //Your Code Here to Overlaod Copy Constructor so you can make a node(node)
+    node& operator=(const node& otherNode){
+        swap(otherNode);
+        return *this;
+    }
     //Your Code Here for Assignment Operator Overload to assign node to a node  (Part of Rule of 3)
     void operator=(const T &var){  //Assignment Operator Overload to take literals
         *data = var;
@@ -24,11 +42,13 @@ class node {
     }
     T getData() const {
         //Your Code Here
+        return *data;
     }
     friend std::ostream& operator<<(std::ostream& out, const node& n){
         out << *n.data;
     }
     //Your Code Here for >> operator overloading to read into n.data of a node&n. Make it inline
+    friend std::istream& operator>>(std::istream& in, const node& n){in >> *n.data;};
   protected:
     T    *data;
     node *left;
@@ -96,14 +116,35 @@ class BinaryTree{
         return 0;
     }
 
-    void inOrderTraversal(node<T>* curr){
+    void inOrderTraversal(node<T>* curr){       //LPR
         //Your Code Here
+        if(curr == NULL)    //Base case
+            return;
+        else{   //recur through the tree and print
+            inOrderTraversal(curr->left);
+            cout << *curr->data << flush;
+            inOrderTraversal(curr->right);
+        }
     }
-    void preOrderTraversal(node<T>* curr){
+    void preOrderTraversal(node<T>* curr){      //PLR
         //Your Code Here
+        if(curr == NULL)    //Base case
+            return;
+        else{   //recur through the tree and print
+            cout << *curr->data << flush;
+            preOrderTraversal(curr->left);
+            preOrderTraversal(curr->right);
+        }
     }
-    void postOrderTraversal(node<T>* curr){
+    void postOrderTraversal(node<T>* curr){     //LRP
         //Your Code Here
+        if(curr == NULL)    //Base case
+            return;
+        else{   //recur through the tree and print
+            postOrderTraversal(curr->left);
+            postOrderTraversal(curr->right);
+            cout << *curr->data << flush;
+        }
     }
     int getHeight(node<T> *curr){
         //Compute Height of both subtrees and keep the larger one

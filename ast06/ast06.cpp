@@ -75,11 +75,11 @@ class BinaryTree{
         cout << "Manually copying tree in copy constructor" << endl;
     #endif
         //Your Code Here (Should call copyTree)
-        //copyTree(root, );
+        copyTree(b2.root, &(this->root));
     }
     int copyTree(node<T>* currOG, node<T>** currNEW){
         //Your Code Here
-        currOG = *currNEW;
+        *currNEW = currOG;
     }
 
     //overload | operator to act as mirror :D
@@ -95,7 +95,20 @@ class BinaryTree{
     }
     int mirrorTree(node<T>* currOG, node<T>** currNEW){
         //Your Code Here
-        
+        static int counter;
+        //cout << "TEST MIRROR " << endl;
+        node<T>* temp = new node<T>; 
+        if(currOG != NULL){
+            counter++;
+            *currNEW = temp;
+            temp->data = currOG->data;
+            //cout << "TEMP DATA: " << temp->data << ", CURR DATA " << currOG->data << endl; //TESTING
+            if(currOG->left != NULL)
+                mirrorTree(currOG->right, &temp->left);
+            if(currOG->right != NULL)
+                mirrorTree(currOG->left, &temp->right);
+        }
+        return counter;
     }
     void operator=(const BinaryTree &b2){ //Assignment Operator Overload  (Part of Rule of 3)
         #ifdef DEBUG
@@ -166,8 +179,17 @@ class BinaryTree{
 
     void inOrderTraversal(node<T>* curr){       //LPR
         //Your Code Here
-        if(curr == NULL)    //Base case
-            return;
+        static bool firstPass; 
+        if(curr == NULL){   //base case that its null
+            if(firstPass == false){     //first pass it is null so get root and resend it back
+                firstPass = true;       //to indicate that its past the first pass
+                inOrderTraversal(root);
+                firstPass = false;      //reset value for next function calls but no recursion calls
+            }
+            else{
+                return;
+            }   
+        }
         else{   //recur through the tree and print
             inOrderTraversal(curr->left);
             cout << *curr->data << flush;
@@ -176,8 +198,17 @@ class BinaryTree{
     }
     void preOrderTraversal(node<T>* curr){      //PLR
         //Your Code Here
-        if(curr == NULL)    //Base case
-            return;
+        static bool firstPass; 
+        if(curr == NULL){   //base case that its null
+            if(firstPass == false){     //first pass it is null so get root and resend it back
+                firstPass = true;       //to indicate that its past the first pass
+                preOrderTraversal(root);
+                firstPass = false;      //reset value for next function calls but no recursion calls
+            }
+            else{
+                return;
+            }   
+        }
         else{   //recur through the tree and print
             cout << *curr->data << flush;
             preOrderTraversal(curr->left);
@@ -186,8 +217,17 @@ class BinaryTree{
     }
     void postOrderTraversal(node<T>* curr){     //LRP
         //Your Code Here
-        if(curr == NULL)    //Base case
-            return;
+        static bool firstPass; 
+        if(curr == NULL){   //base case that its null
+            if(firstPass == false){     //first pass it is null so get root and resend it back
+                firstPass = true;       //to indicate that its past the first pass
+                postOrderTraversal(root);
+                firstPass = false;      //reset value for next function calls but no recursion calls
+            }
+            else{
+                return;
+            }   
+        }
         else{   //recur through the tree and print
             postOrderTraversal(curr->left);
             postOrderTraversal(curr->right);
@@ -224,7 +264,17 @@ class BinaryTree{
     int size;
   private:
     void DeleteTree(node<T>** curr){
-        //Your Code Here
+        // //Your Code Here
+        // node<T>* temp = new node<T>; 
+        // *curr = temp;
+        // if(curr == NULL){   //base case at the end of tree pointing to nothing
+        //     //do nothing
+        // }
+        // else{
+        //     DeleteTree(&temp->left);
+        //     DeleteTree(&temp->right);
+        // }
+        // delete curr;
     }
 };
 

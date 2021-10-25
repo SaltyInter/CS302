@@ -19,7 +19,8 @@ template < class T>
 class node {
   public:
     //Your Code Here: Default Constructor
-    node(){left = NULL; right = NULL; data = NULL;}; 
+    node(){left = NULL; right = NULL; data = new T;};
+    //node() : left(NULL), right(NULL), data(){}
     node(const T &var) : left(NULL), right(NULL) {
         //Your Code Here
         *data = var;
@@ -30,7 +31,9 @@ class node {
     }
     //Your Code Here to Overlaod Copy Constructor so you can make a node(node)
     node& operator=(const node& otherNode){
-        swap(otherNode);
+        this->data = otherNode.data;
+        this->left = otherNode.left;
+        this->right = otherNode.right;
         return *this;
     }
     //Your Code Here for Assignment Operator Overload to assign node to a node  (Part of Rule of 3)
@@ -48,7 +51,7 @@ class node {
         out << *n.data;
     }
     //Your Code Here for >> operator overloading to read into n.data of a node&n. Make it inline
-    friend std::istream& operator>>(std::istream& in, const node& n){in >> *n.data;};
+    friend istream& operator>>(istream& in, const node& n){in >> *n.data; return in;};
   protected:
     T    *data;
     node *left;
@@ -72,9 +75,11 @@ class BinaryTree{
         cout << "Manually copying tree in copy constructor" << endl;
     #endif
         //Your Code Here (Should call copyTree)
+        //copyTree(root, );
     }
     int copyTree(node<T>* currOG, node<T>** currNEW){
         //Your Code Here
+        currOG = *currNEW;
     }
 
     //overload | operator to act as mirror :D
@@ -90,6 +95,7 @@ class BinaryTree{
     }
     int mirrorTree(node<T>* currOG, node<T>** currNEW){
         //Your Code Here
+        
     }
     void operator=(const BinaryTree &b2){ //Assignment Operator Overload  (Part of Rule of 3)
         #ifdef DEBUG
@@ -112,8 +118,50 @@ class BinaryTree{
 
     }
     int recInsert(const T *a, int arrSize, node<T>**curr, int currIndex){
-        //Your Code Here
-        return 0;
+        static int counter;
+        if(currIndex <= arrSize){
+            counter++;
+            node<T>* temp = new node<T>; 
+            if(a[currIndex-1] != '%')
+                temp->setData(a[currIndex-1]);   //set it equal to the head
+            *curr = temp;
+
+            int leftIndex = currIndex*2-1;
+            if(leftIndex < arrSize){
+                char leftChar = a[leftIndex];
+                node<T>* left = new node<T>;   
+
+                if(leftChar != '%' && arrSize >= currIndex){
+                    //cout << "Left char " << leftChar << endl; //TESTING
+                    left->setData(leftChar);
+                    temp->left = left;
+                }
+                else{
+                    counter--;
+                    temp->left = NULL;
+                }
+            }
+
+            int rightIndex = currIndex*2;
+            if(rightIndex < arrSize){
+                char rightChar = a[rightIndex];
+                node<T>* right = new node<T>;
+
+                if(rightChar != '%' && arrSize >= currIndex){
+                    //cout << "Right char " << rightChar << endl; //TESTING
+                    right->setData(rightChar);
+                    temp->right = right;
+                }
+                else{
+                    counter--;
+                    temp->right = NULL;
+                }
+                
+            }
+            recInsert(a, arrSize, &temp->left, currIndex*2);
+            recInsert(a, arrSize, &temp->right, currIndex*2+1);
+        }
+        return counter;
     }
 
     void inOrderTraversal(node<T>* curr){       //LPR
@@ -168,6 +216,7 @@ class BinaryTree{
         for(int i=0; i <= getHeight(root); i++){
             //Your Code Here. Should be one line of code, 
             //a fucntion call to printSpecificLevel with root and i as parameters
+            printSpecificLevel(root, i);
         }
     }
   protected:

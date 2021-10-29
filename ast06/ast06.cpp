@@ -19,10 +19,10 @@ template < class T>
 class node {
   public:
     //Your Code Here: Default Constructor
-    node(){left = NULL; right = NULL; data = new T;};
-    //node() : left(NULL), right(NULL), data(){}
+    node(){left = nullptr; right = nullptr; data = new T;};
     node(const T &var) : left(NULL), right(NULL) {
         //Your Code Here
+        data = new T;
         *data = var;
     }
     //Your Code Here for Destructor
@@ -31,10 +31,11 @@ class node {
     }
     //Your Code Here to Overlaod Copy Constructor so you can make a node(node)
     node& operator=(const node& otherNode){
-        this->data = otherNode.data;
-        this->left = otherNode.left;
-        this->right = otherNode.right;
-        return *this;
+        node* temp = new node();
+        temp->data = otherNode.data;
+        temp->left = otherNode.left;
+        temp->right = otherNode.right;
+        return temp;
     }
     //Your Code Here for Assignment Operator Overload to assign node to a node  (Part of Rule of 3)
     void operator=(const T &var){  //Assignment Operator Overload to take literals
@@ -96,12 +97,17 @@ class BinaryTree{
     int mirrorTree(node<T>* currOG, node<T>** currNEW){
         //Your Code Here
         static int counter;
-        //cout << "TEST MIRROR " << endl;
         node<T>* temp = new node<T>; 
         if(currOG != NULL){
+            // cout << "TESTING " << counter << ": ";
+            // inOrderTraversal(*currNEW);
+            // cout << " ";
+            // inOrderTraversal(currOG);
+            // cout << endl;
+
             counter++;
-            *currNEW = temp;
             temp->data = currOG->data;
+            *currNEW = temp;
             //cout << "TEMP DATA: " << temp->data << ", CURR DATA " << currOG->data << endl; //TESTING
             if(currOG->left != NULL)
                 mirrorTree(currOG->right, &temp->left);
@@ -135,9 +141,10 @@ class BinaryTree{
         if(currIndex <= arrSize){
             counter++;
             node<T>* temp = new node<T>; 
-            if(a[currIndex-1] != '%')
+            if(a[currIndex-1] != '%'){
                 temp->setData(a[currIndex-1]);   //set it equal to the head
-            *curr = temp;
+            }
+
 
             int leftIndex = currIndex*2-1;
             if(leftIndex < arrSize){
@@ -153,6 +160,7 @@ class BinaryTree{
                     counter--;
                     temp->left = NULL;
                 }
+                delete left;
             }
 
             int rightIndex = currIndex*2;
@@ -169,10 +177,12 @@ class BinaryTree{
                     counter--;
                     temp->right = NULL;
                 }
-                
+                delete right;
             }
+            *curr = temp;
             recInsert(a, arrSize, &temp->left, currIndex*2);
             recInsert(a, arrSize, &temp->right, currIndex*2+1);
+            //delete temp;
         }
         return counter;
     }
@@ -264,18 +274,30 @@ class BinaryTree{
     int size;
   private:
     void DeleteTree(node<T>** curr){
-        // //Your Code Here
-        // node<T>* temp = new node<T>; 
-        // *curr = temp;
-        // if(curr == NULL){   //base case at the end of tree pointing to nothing
-        //     //do nothing
-        // }
-        // else{
-        //     DeleteTree(&temp->left);
-        //     DeleteTree(&temp->right);
-        // }
-        // delete curr;
+        //Your Code Here
+        //DeleteTreeFunc(*curr);
+        //*curr = NULL;
     }
+    void DeleteTreeFunc(node<T>* curr){
+        if(curr == NULL){
+            cout << "NULL\n";
+            return;
+        }
+        else{
+            if(curr->left != NULL){
+                cout << "LEFT TEMP DATA: " << *curr->left->data <<  endl; //TESTING
+                DeleteTreeFunc(curr->left);
+            }
+            if(curr->right != NULL){
+                cout << "RIGHT TEMP DATA: " << *curr->right->data <<  endl; //TESTING
+                DeleteTreeFunc(curr->right);
+            }
+            cout << "TEMP DATA: " << *curr->data <<  endl; //TESTING
+            delete(curr);
+        }
+
+    }
+
 };
 
 template<class T>
@@ -297,6 +319,7 @@ class OmegaSeamaster {
     }
     void CleanTemp(){
         //Your Code Here
+        delete BinaryTreeTemp;
     }
     void Draw(){
         cout << "                           ||||                           \n";
@@ -318,6 +341,7 @@ class OmegaSeamaster {
     //Reedem your test grade and do the extra credit!!!
     ~OmegaSeamaster(){
         //Your Code Here
+        delete BinaryTreeTemp;
     }
 };
 

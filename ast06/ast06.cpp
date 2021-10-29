@@ -293,7 +293,7 @@ class BinaryTree{
                 DeleteTreeFunc(curr->right);
             }
             cout << "TEMP DATA: " << *curr->data <<  endl; //TESTING
-            delete(curr);
+            delete curr;
         }
 
     }

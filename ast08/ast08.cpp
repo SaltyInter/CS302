@@ -393,8 +393,439 @@ void quickSort(Xyston_class_StarDestroyer* arr[], int l, int r){
 //end of changes for ast05
 
 //changes for ast08
+template < class T>
+class node {
+  public:
+    //Your Code Here: Default Constructor
+    node(){left = nullptr; right = nullptr; data = new T;};
+    node(const T &var) : left(NULL), right(NULL) {
+        //Your Code Here
+        data = new T;
+        *data = var;
+    }
+    //Your Code Here for Destructor
+    ~node(){
+        delete data;
+    }
+    //Your Code Here to Overlaod Copy Constructor so you can make a node(node)
+    node& operator=(const node& otherNode){
+        node* temp = new node();
+        temp->data = otherNode.data;
+        temp->left = otherNode.left;
+        temp->right = otherNode.right;
+        return temp;
+    }
+    //Your Code Here for Assignment Operator Overload to assign node to a node  (Part of Rule of 3)
+    void operator=(const T &var){  //Assignment Operator Overload to take literals
+        *data = var;
+    }
+    void setData(T var) {
+        *data = var;
+    }
+    T getData() const {
+        //Your Code Here
+        return *data;
+    }
+    friend std::ostream& operator<<(std::ostream& out, const node& n){
+        out << *n.data;
+    }
+    //Your Code Here for >> operator overloading to read into n.data of a node&n. Make it inline
+    friend istream& operator>>(istream& in, const node& n){in >> *n.data; return in;};
+  protected:
+    T    *data;
+    node *left;
+    node *right;
+    template <class U> friend class BinaryTree; //<--Don't you dare to @#$%$ touch this.
+};
+
+template <class T>
+class BinaryTree{
+  public:
+    BinaryTree() : root(NULL), size(0){}
+    virtual ~BinaryTree(){                //Destructor                    (Part of Rule of 3)
+        DeleteTree(&root);
+        root = NULL;
+    }
+    BinaryTree(const BinaryTree &b2){     //Copy Constructor Overload     (Part of Rule of 3)
+        //Your Code Here (Should call copyTree)
+        copyTree(b2.root, &(this->root));
+    }
+    int copyTree(node<T>* currOG, node<T>** currNEW){
+        //Your Code Here
+        *currNEW = currOG;
+    }
+
+    //overload | operator to act as mirror :D
+    BinaryTree operator|(const BinaryTree& OG){
+        if(OG.root == NULL) return OG;
+        DeleteTree(&root);
+        this->root = NULL;
+        this->size = mirrorTree(OG.root, &(this->root));
+        return OG;
+    }
+    int mirrorTree(node<T>* currOG, node<T>** currNEW){
+        //Your Code Here
+        static int counter;
+        node<T>* temp = new node<T>; 
+        if(currOG != NULL){
+            // cout << "TESTING " << counter << ": ";
+            // inOrderTraversal(*currNEW);
+            // cout << " ";
+            // inOrderTraversal(currOG);
+            // cout << endl;
+
+            counter++;
+            temp->data = currOG->data;
+            *currNEW = temp;
+            //cout << "TEMP DATA: " << temp->data << ", CURR DATA " << currOG->data << endl; //TESTING
+            if(currOG->left != NULL)
+                mirrorTree(currOG->right, &temp->left);
+            if(currOG->right != NULL)
+                mirrorTree(currOG->left, &temp->right);
+        }
+        return counter;
+    }
+    void operator=(const BinaryTree &b2){ //Assignment Operator Overload  (Part of Rule of 3)
+        DeleteTree(&root);
+        this->root = NULL;
+        this->size = copyTree(b2.root, &(this->root));
+    }
+    void readnGenerate(const T a[], int arr_size){
+        if(arr_size <= 0) return; //empty
+        #ifdef DEBUG
+        cout << "Generating From: '" << a << "'\nOG Length: 00" << arr_size << endl;
+        #endif
+        DeleteTree(&root);
+        this->size = recInsert(a, arr_size, &root, 1);
+        #ifdef DEBUG
+        cout << "Total Inserted: "  << this->size << endl;
+        #endif
+
+    }
+    //ast 08 code
+    void insertShipBinarySearch(T insertItem){
+        this->root = insertShipBinarySearchHelper(this->root, insertItem);
+    }
+
+    node<T>* insertShipBinarySearchHelper(node<T>* root, T insertItem){
+        
+        if(root == NULL){   //Spot is empty
+            return new node(insertItem);
+        }
+        else{
+            //get the names of the ships for comparing
+            string currStr = root->data->getName();
+            string insertStr = insertItem.getName();
+
+            //go left if the new item is less than or equal to the curr one
+            if(compareShipNames(currStr, insertStr) > 0){   //call compareShipNames to see whos greater
+                root->left = insertShipBinarySearchHelper(root->left, insertItem);
+            }
+            //go right if the new item is greater than the curr one
+            else if(compareShipNames(currStr, insertStr) <= 0){
+                root->right = insertShipBinarySearchHelper(root->right, insertItem);
+            }
+        }
+        return root;
+    }
+
+    //end of ast08 changes
+
+    //ast 07 code
+    void genFromINandPRE(const T preOrder[],const  T inOrder[]){
+        this->root = genFromINandPREHelper(0, 0, (string(inOrder).length())-1, preOrder, inOrder);
+    }
+
+    node<T>* genFromINandPREHelper(int preStart, int inStart, int inEnd, const T *preOrder, const T *inOrder){
+        //base case nothing to do here anymore
+        if(inStart > inEnd || preStart > string(preOrder).length()-1){      
+            return NULL;
+        }
+        node<T>* temp = new node<T>;        //temp node to return later to set to root
+        //cout << "TEST: " << preOrder[preStart] << endl; //TESTING
+        temp->setData(preOrder[preStart]);    //set it to the next thing in the preOrder list
+
+        int index = 0;      //used to hold the index of where the preStart is held inOrder
+        for(int i = inStart; i <= inEnd; i++){
+            if(temp->getData() == inOrder[i]){
+                //cout << "TEMP: " << temp->getData() << ", inOrder: " << inOrder[i] << endl; //TESTING
+                index = i;      //found the index and set it to I
+            }
+        }
+        //set up temp's left and right 
+
+        //set up varaibles to pass for next recursive call
+        int leftPreStart = preStart + 1;
+        int rightPreStart = preStart + index - inStart + 1;
+        temp->left = genFromINandPREHelper(leftPreStart, inStart, index-1, preOrder, inOrder);
+        temp->right = genFromINandPREHelper(rightPreStart, index + 1, inEnd, preOrder, inOrder);
+
+        //return the node
+        return temp;
+    }
+
+    void genFromINandPost(const T postOrder[],const  T inOrder[]){
+        this->root = genFromINandPostHelper(string(postOrder).length()-1, 0, (string(inOrder).length())-1 , postOrder, inOrder);
+    }
+
+    node<T>* genFromINandPostHelper(int postStart, int inStart, int inEnd, const T *postOrder, const T *inOrder){
+        //base case nothing to do here anymore
+        if(inStart > inEnd){      
+            return NULL;
+        }
+        node<T>* temp = new node<T>;        //temp node to return later to set to root
+        //cout << "TEST: " << postOrder[postStart] << endl; //TESTING
+        temp->setData(postOrder[postStart]);    //set it to the next thing in the preOrder list
+
+        int index = 0;      //used to hold the index of where the preStart is held inOrder
+        for(int i = inStart; i <= inEnd; i++){
+            if(temp->getData() == inOrder[i]){
+                //cout << "TEMP: " << temp->getData() << ", inOrder: " << inOrder[i] << endl; //TESTING
+                index = i;      //found the index and set it to I
+            }
+        }
+        //set up temp's left and right 
+
+        //set up varaibles to pass for next recursive call
+        int rightPostStart = postStart - 1;
+        int leftPostStart = postStart - (inEnd - index) - 1;
+        temp->right = genFromINandPostHelper(rightPostStart,index+1, inEnd, postOrder, inOrder);
+        temp->left = genFromINandPostHelper(leftPostStart, inStart, index-1, postOrder, inOrder);
+
+        //return the node
+        return temp;
+    }
+
+    //end of ast 07 code
+
+    int recInsert(const T *a, int arrSize, node<T>**curr, int currIndex){
+        static int counter;
+        if(currIndex <= arrSize){
+            counter++;
+            node<T>* temp = new node<T>; 
+            if(a[currIndex-1] != '%'){
+                temp->setData(a[currIndex-1]);   //set it equal to the head
+            }
 
 
+            int leftIndex = currIndex*2-1;
+            if(leftIndex < arrSize){
+                char leftChar = a[leftIndex];
+                node<T>* left = new node<T>;   
+
+                if(leftChar != '%' && arrSize >= currIndex){
+                    //cout << "Left char " << leftChar << endl; //TESTING
+                    left->setData(leftChar);
+                    temp->left = left;
+                }
+                else{
+                    counter--;
+                    temp->left = NULL;
+                }
+                delete left;
+            }
+
+            int rightIndex = currIndex*2;
+            if(rightIndex < arrSize){
+                char rightChar = a[rightIndex];
+                node<T>* right = new node<T>;
+
+                if(rightChar != '%' && arrSize >= currIndex){
+                    //cout << "Right char " << rightChar << endl; //TESTING
+                    right->setData(rightChar);
+                    temp->right = right;
+                }
+                else{
+                    counter--;
+                    temp->right = NULL;
+                }
+                delete right;
+            }
+            *curr = temp;
+            recInsert(a, arrSize, &temp->left, currIndex*2);
+            recInsert(a, arrSize, &temp->right, currIndex*2+1);
+            //delete temp;
+        }
+        return counter;
+    }
+
+    void inOrderTraversal(node<T>* curr){       //LPR
+        //Your Code Here
+        static bool firstPass; 
+        if(curr == NULL){   //base case that its null
+            if(firstPass == false){     //first pass it is null so get root and resend it back
+                firstPass = true;       //to indicate that its past the first pass
+                inOrderTraversal(root);
+                firstPass = false;      //reset value for next function calls but no recursion calls
+            }
+            else{
+                return;
+            }   
+        }
+        else{   //recur through the tree and print
+            inOrderTraversal(curr->left);
+            Xyston_class_StarDestroyer tempShip = *curr->data;
+            cout << tempShip.getName() << endl << flush;
+            inOrderTraversal(curr->right);
+        }
+    }
+
+    void inOrderTraversalNavSource(node<T>* curr){       //LPR
+        //Your Code Here
+        static bool firstPass; 
+        if(curr == NULL){   //base case that its null
+            if(firstPass == false){     //first pass it is null so get root and resend it back
+                firstPass = true;       //to indicate that its past the first pass
+                inOrderTraversalNavSource(root);
+                firstPass = false;      //reset value for next function calls but no recursion calls
+            }
+            else{
+                return;
+            }   
+        }
+        else{   //recur through the tree and print
+            inOrderTraversalNavSource(curr->left);
+            Xyston_class_StarDestroyer tempShip = *curr->data;
+            //cout << tempShip.getName() << endl << flush;
+            tempShip.printNavSource();
+            inOrderTraversalNavSource(curr->right);
+        }
+    }
+
+    void inOrderTraversalNavSource2(node<T>* curr){
+        //Your Code Here
+        static bool firstPass; 
+        if(curr == NULL){   //base case that its null
+            if(firstPass == false){     //first pass it is null so get root and resend it back
+                firstPass = true;       //to indicate that its past the first pass
+                inOrderTraversalNavSource2(root);
+                firstPass = false;      //reset value for next function calls but no recursion calls
+            }
+            else{
+                return;
+            }   
+        }
+        else{   //recur through the tree and print
+            inOrderTraversalNavSource2(curr->left);
+            Xyston_class_StarDestroyer tempShip = *curr->data;
+            cout << tempShip.getName() << ": ";
+            tempShip.printNavSource();
+            inOrderTraversalNavSource2(curr->right);
+        }
+    }
+
+    //Set the nav source using in order traversal
+    void setNavInOrder(node<T>* curr, entity_t* navSource){
+        static bool firstPass; 
+        if(curr == NULL){   //base case that its null
+            if(firstPass == false){     //first pass it is null so get root and resend it back
+                firstPass = true;       //to indicate that its past the first pass
+                setNavInOrder(root, navSource);
+                firstPass = false;      //reset value for next function calls but no recursion calls
+            }
+            else{
+                return;
+            }   
+        }
+        else{   //recur through the tree and print
+            setNavInOrder(curr->left, navSource);
+            curr->data->setNavSource(&*navSource);
+            setNavInOrder(curr->right, navSource);
+        }
+    }
+
+    void preOrderTraversal(node<T>* curr){      //PLR
+        //Your Code Here
+        static bool firstPass; 
+        if(curr == NULL){   //base case that its null
+            if(firstPass == false){     //first pass it is null so get root and resend it back
+                firstPass = true;       //to indicate that its past the first pass
+                preOrderTraversal(root);
+                firstPass = false;      //reset value for next function calls but no recursion calls
+            }
+            else{
+                return;
+            }   
+        }
+        else{   //recur through the tree and print
+            cout << *curr->data << flush;
+            preOrderTraversal(curr->left);
+            preOrderTraversal(curr->right);
+        }
+    }
+    void postOrderTraversal(node<T>* curr){     //LRP
+        //Your Code Here
+        static bool firstPass; 
+        if(curr == NULL){   //base case that its null
+            if(firstPass == false){     //first pass it is null so get root and resend it back
+                firstPass = true;       //to indicate that its past the first pass
+                postOrderTraversal(root);
+                firstPass = false;      //reset value for next function calls but no recursion calls
+            }
+            else{
+                return;
+            }   
+        }
+        else{   //recur through the tree and print
+            postOrderTraversal(curr->left);
+            postOrderTraversal(curr->right);
+            cout << *curr->data << flush;
+        }
+    }
+    int getHeight(node<T> *curr){
+        //Compute Height of both subtrees and keep the larger one
+        if(curr == NULL) return 0; //base case
+        else{
+            int lheight = getHeight(curr->left); 
+            int rheight = getHeight(curr->right);
+            if  (lheight > rheight) return lheight+1;
+            else return rheight+1;
+        }
+    }
+    void printSpecificLevel(node<T> *root, int level){
+        if(root == NULL) return;
+        if(level == 1) cout << *root;
+        else if(level > 1){
+            printSpecificLevel(root->left, level-1);
+            printSpecificLevel(root->right, level-1);
+        }
+    }
+    void printLevelOrderTraversal(){
+        for(int i=0; i <= getHeight(root); i++){
+            //Your Code Here. Should be one line of code, 
+            //a fucntion call to printSpecificLevel with root and i as parameters
+            printSpecificLevel(root, i);
+        }
+    }
+  protected:
+    node<T> *root;
+    int size;
+  private:
+    void DeleteTree(node<T>** curr){
+        //Your Code Here
+        DeleteTreeFunc(*curr);
+        *curr = NULL;
+    }
+    void DeleteTreeFunc(node<T>* curr){
+        if(curr == NULL){
+            cout << "NULL\n";
+            return;
+        }
+        else{
+            if(curr->left != NULL){
+                //cout << "LEFT TEMP DATA: " << *curr->left->data <<  endl; //TESTING
+                DeleteTreeFunc(curr->left);
+            }
+            if(curr->right != NULL){
+                //cout << "RIGHT TEMP DATA: " << *curr->right->data <<  endl; //TESTING
+                DeleteTreeFunc(curr->right);
+            }
+            //cout << "TEMP DATA: " << *curr->data <<  endl; //TESTING
+            delete curr;
+        }
+
+    }
+};
 
 //end of changes for ast08
 
@@ -409,12 +840,20 @@ int main(int argc, char **argv){
     if(argc >= 3){               //Prevent crash if there is nothing in argv[2]
         inputDataTypeStr = argv[2];
     }
+
+    //Lowercase the input for if statements
+    for(int i = 0; i < inputDataTypeStr.length(); i++){
+         inputDataTypeStr[i] = tolower(inputDataTypeStr[i]);
+    }
     if(inputDataTypeStr == "vector"){        //Runs vector version
         dataType = 2;
     }
     else if(inputDataTypeStr == "linked"){   //Runs linked list version
         dataType = 3;
-    }
+    }//changes for assn 8
+    else if(inputDataTypeStr == "binarytree"){
+        dataType = 4;
+    } //end of changes
     else{                           //Runs normal array version
         dataType = 1;
     }
@@ -424,7 +863,7 @@ int main(int argc, char **argv){
     int sortingType = -1;
     if(argc >= 4){  //Testing if there is some sorting request
         inputSortingType = argv[3];
-        //Lowercase the input for in statements
+        //Lowercase the input for if statements
         for(int i = 0; i < inputSortingType.length(); i++){
             inputSortingType[i] = tolower(inputSortingType[i]);
         }
@@ -445,11 +884,18 @@ int main(int argc, char **argv){
     else if(inputSortingType == "quicksort"){
         sortingType = 5;    //Quick Sort
     }
-    //end of changes
+    //ast08 changes
+    else if(inputSortingType == "standard"){
+        sortingType = 6;    //Standard Binary Search Tree
+    }
+    else if(inputSortingType == "avl"){
+        sortingType = 7;    //AVL tree
+    } //end of assn 8 changes
+    //end of assn 5 changes
     srand (time(NULL)); //Seed Rand!
     RNGnamer nameList(argv[1]);
     int fleet_size = 10000;
-//#define DEBUG
+#define DEBUG
 #ifdef DEBUG
     fleet_size = 10; //for small tests (sample output given is with this size)
 #endif
@@ -461,7 +907,11 @@ int main(int argc, char **argv){
     vector<Xyston_class_StarDestroyer> Sith_Eternal_Fleet_Vec;     //Vector
     Node* head = NULL;          //Linked List
     Node* tail = NULL;
-    
+
+    //changes for ast08
+    BinaryTree<Xyston_class_StarDestroyer> *tree = new BinaryTree<Xyston_class_StarDestroyer>;
+    //end of ast08 changes
+
     //Fill the data type depending on which type it is
     for(int i=0; i < fleet_size; i++){
         if(dataType == 1){
@@ -473,6 +923,9 @@ int main(int argc, char **argv){
         else if(dataType == 3){
             pushNode(&head, &tail, Xyston_class_StarDestroyer(nameList));
         }
+        else if(dataType == 4){     //changes for ast08
+            tree->insertShipBinarySearch(Xyston_class_StarDestroyer(nameList));
+        }//end of changes
     }
     
     //end of changes
@@ -498,6 +951,10 @@ int main(int argc, char **argv){
         }
     }
     //end of changes
+    
+    //change for ast08
+    if(dataType == 4)
+        tree->setNavInOrder(NULL, &Exogol_Tower);
 
     cout << "Nav Source for fleet:" << endl;
 
@@ -518,6 +975,9 @@ int main(int argc, char **argv){
             curr = curr->next;  //go to next element of linked list
         }
     }
+    //ast08 change
+    if(dataType ==4)
+        tree->inOrderTraversalNavSource(NULL);
     //end of changes
 
     cout << "\nThe Resistance is targetting the Navigation Tower. "
@@ -547,10 +1007,23 @@ int main(int argc, char **argv){
             curr = curr->next;      //go to next element of linked list
         }
     }
+    if(dataType == 4)
+        tree->setNavInOrder(NULL, &Steadfast_flagship);
+    if(dataType == 4)
+        tree->inOrderTraversalNavSource2(NULL);
     //end of changes
     
+     //changes for ast08
+    //print the entire tree in non descending order
+    cout << "\nTREE IN ORDER TRAVERSAL:\n"
+         << "-----------------------\n";
+    tree->inOrderTraversal(NULL);
+    cout << "\nEND OF TRAVERSAL\n\n\n";
+    //end of ast08 changes
+
     //changes for ast05
     //Output to file
+
     if(argc >= 4){      //Running sorting
         //Writing unsorted ships into file
         ofstream file;
@@ -568,6 +1041,7 @@ int main(int argc, char **argv){
                 curr = curr->next;      //traverse the linked list
             }
         }
+
         file << "\n\n\n\n\n\n\n\n\n\n";     //Linefeed space
 
         if(sortingType == 1){       //Bubble sort 
@@ -640,12 +1114,15 @@ int main(int argc, char **argv){
 
         file.close();
     }
+
     //end of changes
     if(dataType == 1){
         for(int i=0; i < fleet_size; i++){
             delete Sith_Eternal_Fleet[i];
         }
     } //Did you ever hear the tragedy of Darth Plagueis the wise?
+    //ast08 change
+    delete tree;    //delete tree at the end of function
 
 #ifdef DEBUG
     nameList.printAllPossibleNames(); //Test if read successfully.

@@ -15,6 +15,14 @@
 #include <string>   //stringz
 #include <vector>   //vector
 
+//assn8 write up counters
+//should be commented out by default
+//#define COUNTERS
+#ifdef COUNTERS
+static int comparisonCounter = 0;
+static int rotationCounter = 0;
+#endif
+
 using namespace std;
 
 class RNGnamer{
@@ -397,8 +405,8 @@ template < class T>
 class node {
   public:
     //Your Code Here: Default Constructor
-    node(){left = nullptr; right = nullptr; data = new T;};
-    node(const T &var) : left(NULL), right(NULL) {
+    node(){left = nullptr; right = nullptr; data = new T; height = 1;};
+    node(const T &var) : left(NULL), right(NULL), height(1) {
         //Your Code Here
         data = new T;
         *data = var;
@@ -413,6 +421,7 @@ class node {
         temp->data = otherNode.data;
         temp->left = otherNode.left;
         temp->right = otherNode.right;
+        temp->height = otherNode.height;
         return temp;
     }
     //Your Code Here for Assignment Operator Overload to assign node to a node  (Part of Rule of 3)
@@ -435,6 +444,7 @@ class node {
     T    *data;
     node *left;
     node *right;
+    int height;
     template <class U> friend class BinaryTree; //<--Don't you dare to @#$%$ touch this.
 };
 
@@ -503,32 +513,171 @@ class BinaryTree{
 
     }
     //ast 08 code
-    void insertShipBinarySearch(T insertItem){
+    void insertShipBinarySearch(node<T>* insertItem){
         this->root = insertShipBinarySearchHelper(this->root, insertItem);
     }
 
-    node<T>* insertShipBinarySearchHelper(node<T>* root, T insertItem){
+    node<T>* insertShipBinarySearchHelper(node<T>* root, node<T>* insertItem){
         
         if(root == NULL){   //Spot is empty
-            return new node(insertItem);
+            return insertItem;
         }
         else{
+            #ifdef COUNTERS
+                comparisonCounter++;
+            #endif
             //get the names of the ships for comparing
             string currStr = root->data->getName();
-            string insertStr = insertItem.getName();
+            string insertStr = insertItem->data->getName();
 
             //go left if the new item is less than or equal to the curr one
-            if(compareShipNames(currStr, insertStr) > 0){   //call compareShipNames to see whos greater
+            if(compareShipNames(currStr, insertStr) >= 0){   //call compareShipNames to see whos greater
                 root->left = insertShipBinarySearchHelper(root->left, insertItem);
             }
             //go right if the new item is greater than the curr one
-            else if(compareShipNames(currStr, insertStr) <= 0){
+            else if(compareShipNames(currStr, insertStr) < 0){
                 root->right = insertShipBinarySearchHelper(root->right, insertItem);
             }
         }
         return root;
     }
 
+    void insertShipAVL(node<T>* insertItem){
+        //TESTING STUFF
+        // cout << "\n\nINSERT " << insertItem->data->getName() << endl;
+        // if(root != NULL)
+        //     cout << "!!!ROOT DATA " << root->data->getName() << endl;
+        this->root = insertShipAVLHelper(this->root, insertItem);
+    }
+
+    node<T>* insertShipAVLHelper(node<T>* root, node<T>* insertItem){
+        //Counter for assignment writeup
+
+        if(root == NULL){       //new node
+            return insertItem;
+        }
+        
+        #ifdef COUNTERS
+                comparisonCounter++;
+        #endif
+
+        //Insert the node into the tree
+        //get the names of the ships for comparing
+        string currStr = root->data->getName();
+        string insertStr = insertItem->data->getName();
+        //cout << "TESTING " << currStr << " " <<insertStr << endl;   //TESTING
+        //get the return value of comparing the two strings
+        // >= 0 is left < 0 right
+        int compareValue = (compareShipNames(currStr, insertStr)); 
+        
+         //go left if the new item is less than or equal to the curr one
+        if(compareValue >= 0){   //call compareShipNames to see whos greater
+            root->left = insertShipAVLHelper(root->left, insertItem);
+        }
+        //go right if the new item is greater than the curr one
+        else if(compareValue < 0){
+            root->right = insertShipAVLHelper(root->right, insertItem);
+        }
+
+        //check for inbalance in the tree
+        int treeBalance = getTreeBalance(root);
+
+        //used for comapring nodes to left strings
+        if(treeBalance > 1 || treeBalance < -1){
+            #ifdef COUNTERS
+                rotationCounter++;
+            #endif
+            string currLeftStr = " ";
+            string currRightStr = " ";
+
+            if(root->left != NULL)
+                currLeftStr = root->left->data->getName();
+            if(root->right != NULL)
+                currRightStr = root->right->data->getName();
+
+            //Get int values from comparing left/right of the root to the new insert
+            //returns 0 if equal -1 if curr(left/right) is less and 1 for insert being less
+            int compareValueLeft = (compareShipNames(currLeftStr, insertStr)); 
+            int compareValueRight = (compareShipNames(currRightStr, insertStr)); 
+
+            //left left case
+            if(treeBalance > 1 && compareValueLeft > 0){
+                return rightRotate(root);
+            }
+            //right right case
+            else if(treeBalance < -1 && compareValueRight <= 0){
+                return leftRotate(root);
+            }
+
+            //left right case
+            if(treeBalance > 1 && compareValueLeft <= 0){
+                root->left = leftRotate(root->left);
+                return rightRotate(root);
+            }
+
+            //right left case
+            if(treeBalance < -1 && compareValueRight > 0){
+                root->right = rightRotate(root->right);
+                return leftRotate(root);
+            }
+        }
+
+        return root;
+    }
+
+    //Left Left imbalance
+    node<T>* rightRotate(node<T>* y){
+        node<T>* x = y->left;        //grab the node left and store in as x
+        node<T>* temp = x->right;     //create a temp node with node 2 right tree
+        //preform rotations:
+        x->right = y;
+        y->left = temp;      //set it to root right
+        return x;
+    }
+
+    //Right Right imbalance
+   node<T>* leftRotate(node<T>* x){
+        node<T>* y = x->right;        //grab the node left and store in as x
+        node<T>* temp = y->left;        //create a temp node with y's left
+        //preform rotations:
+        y->left = x;
+        x->right = temp;      //set it to root right
+        return y;
+    }
+
+    //Func that returns the height of a tree
+    int height(node<T>* root){
+        if(root == NULL){
+            return -1;
+        }
+        else{
+            int leftHeight = height(root->left);
+            int rightHeight = height(root->right);
+
+            //return the height of the one that is higher
+            if(leftHeight > rightHeight){
+                return (leftHeight + 1);
+            }
+            else{
+                return (rightHeight + 1);
+            }
+        }
+    }
+
+    //returns the values of the tree left and right
+    int getTreeBalance(node<T>* node){
+        if(node == NULL){
+            return -1;      //tree has nothing in it
+        }
+        else{
+            return (height(node->left) - height(node->right));
+        }
+    }
+    
+    //return the root
+    node<T>* getRoot(){
+        return this->root;
+    }
     //end of ast08 changes
 
     //ast 07 code
@@ -774,7 +923,7 @@ class BinaryTree{
     }
     int getHeight(node<T> *curr){
         //Compute Height of both subtrees and keep the larger one
-        if(curr == NULL) return 0; //base case
+        if(curr == NULL) return -1; //base case
         else{
             int lheight = getHeight(curr->left); 
             int rheight = getHeight(curr->right);
@@ -895,7 +1044,7 @@ int main(int argc, char **argv){
     srand (time(NULL)); //Seed Rand!
     RNGnamer nameList(argv[1]);
     int fleet_size = 10000;
-#define DEBUG
+//#define DEBUG
 #ifdef DEBUG
     fleet_size = 10; //for small tests (sample output given is with this size)
 #endif
@@ -924,7 +1073,13 @@ int main(int argc, char **argv){
             pushNode(&head, &tail, Xyston_class_StarDestroyer(nameList));
         }
         else if(dataType == 4){     //changes for ast08
-            tree->insertShipBinarySearch(Xyston_class_StarDestroyer(nameList));
+            //node to insert into the trees
+            node<Xyston_class_StarDestroyer> *insertItem 
+                = new node(Xyston_class_StarDestroyer(nameList));
+            if(sortingType == 6)    //standard BST 
+                tree->insertShipBinarySearch(insertItem);
+            else if(sortingType ==7)    //AVL tree
+                tree->insertShipAVL(insertItem);
         }//end of changes
     }
     
@@ -1019,6 +1174,14 @@ int main(int argc, char **argv){
          << "-----------------------\n";
     tree->inOrderTraversal(NULL);
     cout << "\nEND OF TRAVERSAL\n\n\n";
+
+    #ifdef COUNTERS
+    cout << "Counters:"
+         << "\nComparison counter: " << comparisonCounter
+         << "\nRotation counter: " << rotationCounter 
+         << "\nHeight of tree: " << tree->getHeight(tree->getRoot()) << "\n\n";
+     #endif
+
     //end of ast08 changes
 
     //changes for ast05

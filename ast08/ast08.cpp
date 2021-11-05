@@ -551,8 +551,6 @@ class BinaryTree{
     }
 
     node<T>* insertShipAVLHelper(node<T>* root, node<T>* insertItem){
-        //Counter for assignment writeup
-
         if(root == NULL){       //new node
             return insertItem;
         }
@@ -566,6 +564,7 @@ class BinaryTree{
         string currStr = root->data->getName();
         string insertStr = insertItem->data->getName();
         //cout << "TESTING " << currStr << " " <<insertStr << endl;   //TESTING
+
         //get the return value of comparing the two strings
         // >= 0 is left < 0 right
         int compareValue = (compareShipNames(currStr, insertStr)); 
@@ -582,11 +581,12 @@ class BinaryTree{
         //check for inbalance in the tree
         int treeBalance = getTreeBalance(root);
 
-        //used for comapring nodes to left strings
+        //Only run this if there is an imbalance in the tree
         if(treeBalance > 1 || treeBalance < -1){
             #ifdef COUNTERS
                 rotationCounter++;
             #endif
+            //used for comapring nodes to left strings
             string currLeftStr = " ";
             string currRightStr = " ";
 
@@ -622,33 +622,37 @@ class BinaryTree{
             }
         }
 
+        //return the root of the node
         return root;
     }
 
     //Left Left imbalance
-    node<T>* rightRotate(node<T>* y){
-        node<T>* x = y->left;        //grab the node left and store in as x
-        node<T>* temp = x->right;     //create a temp node with node 2 right tree
+    node<T>* rightRotate(node<T>* root){
+        //Store the node into temps
+        node<T>* rootLeft = root->left;        //grab the node left and store in as x
+        node<T>* temp = rootLeft->right;     //create a temp node with node 2 right tree
         //preform rotations:
-        x->right = y;
-        y->left = temp;      //set it to root right
-        return x;
+        rootLeft->right = root;
+        root->left = temp;      //set it to root right
+        return rootLeft;        //return the root->left as the new root
     }
 
     //Right Right imbalance
-   node<T>* leftRotate(node<T>* x){
-        node<T>* y = x->right;        //grab the node left and store in as x
-        node<T>* temp = y->left;        //create a temp node with y's left
+   node<T>* leftRotate(node<T>* root){
+       //Store the node into temps
+        node<T>* rootRight = root->right;        //grab the node left and store in as x
+        node<T>* temp = rootRight->left;        //create a temp node with y's left
         //preform rotations:
-        y->left = x;
-        x->right = temp;      //set it to root right
-        return y;
+        rootRight->left = root;
+        root->right = temp;      //set it to root right
+
+        return rootRight;   //return the root->right as the new root
     }
 
     //Func that returns the height of a tree
     int height(node<T>* root){
         if(root == NULL){
-            return -1;
+            return -1;  //at the bottom
         }
         else{
             int leftHeight = height(root->left);

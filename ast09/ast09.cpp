@@ -56,21 +56,21 @@ int dropship::count = 0;
 //added
 void heapifyArr(dropship* arr[],int arrSize, int i){
     //get the left and right index value
-    int leftIndex = 2 * i;
-    int rightIndex = 2 * i + 1;
+    int leftIndex = 2 * i + 1;
+    int rightIndex = 2 * i + 2;
     
     //temp var to hold the min
     //set to the parent node by default
     int minIndex = i;
 
     //check left child
-    if(arr[leftIndex]->priority < arr[minIndex]->priority && arrSize > leftIndex){
+    if(leftIndex < arrSize && arr[leftIndex]->priority > arr[minIndex]->priority){
         //within bounds and is less than so its new min
         minIndex = leftIndex;
     }
 
     //check right child
-    if(arr[rightIndex]->priority < arr[minIndex]->priority && arrSize > rightIndex){
+    if(rightIndex < arrSize && arr[rightIndex]->priority > arr[minIndex]->priority){
         //within bounds and is less than so its new min
         minIndex = rightIndex;
     }
@@ -85,11 +85,17 @@ void heapifyArr(dropship* arr[],int arrSize, int i){
     }
 }
 
+//heapify based off at index
+//bubble up the heap
 void heapify(dropship* arr[], int arrSize, int index){
+    //get the parent of the index
     int parent = (index-1)/2;
 
-    if(arr[parent]->priority < arr[index]->priority){
+    //check if the parent is greater than the index
+    if(arr[parent]->priority > arr[index]->priority){
+        //it is greater so swap them
         swap(arr[parent], arr[index]);
+        //call heapify recursivly on the new parent which was the index
         heapify(arr, arrSize, parent);
     }
 }
@@ -131,14 +137,12 @@ int main(){
     UDF[1000] = &j;
     //Fix Heap after insertion of J SQUAD.
     //Your Code Here
-    arrSize++;
-    heapify(UDF, arrSize, arrSize-1);
+    heapify(UDF, ++arrSize, arrSize-1);
 
     UDF[1001] = &fmb;
     //Fix Heap after insertion of FMB.
     //Your Code Here
-    arrSize++;
-    heapify(UDF, arrSize, arrSize-1);
+    heapify(UDF, ++arrSize, arrSize-1);
 
     //Now launch each ship by removing it from the heap. Print to screen as each ship launches.
     //e.g:  Launching Ship: 
@@ -155,8 +159,9 @@ int main(){
         heapifyArr(UDF, i, 0);
     }
 
+    //output the ships
     for(int i=0; i< arrSize; i++){
-        cout << "Launching " << UDF[i] << endl;
+        cout << "Launching "<< UDF[i] << endl;
     }
 
     cout << "Master Sergeant Farell: It’s alright to be scared.\n"
@@ -164,9 +169,9 @@ int main(){
 
     //De-allocate to avoid memory leaks. 
     //Your Code Here
-    // for(int i = 0; i < 1002; i++){
-    //     delete UDF[i];
-    // }
-
+    //causes an error but deletes all memory leaks so idk
+    for(int i = 0; i < arrSize; i++){
+        delete UDF[i];
+    }
     return 0;
 }
